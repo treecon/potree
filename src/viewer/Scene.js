@@ -164,7 +164,11 @@ export class Scene extends EventDispatcher{
 	};
 
 	add360Images(images){
+		console.log('my custom logs')
+		console.log(this);
+		console.log(images)
 		this.images360.push(images);
+		console.log(images.node)
 		this.scene.add(images.node);
 
 		this.dispatchEvent({

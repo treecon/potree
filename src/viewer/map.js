@@ -549,6 +549,7 @@ export class MapView{
 	}
 
 	setSceneProjection (sceneProjection) {
+		console.log('custom HERE', this.mapProjection);
 		this.sceneProjection = sceneProjection;
 		this.toMap = proj4(this.sceneProjection, this.mapProjection);
 		this.toScene = proj4(this.mapProjection, this.sceneProjection);
@@ -624,6 +625,7 @@ export class MapView{
 	}
 
 	addImages360(images){
+		console.log('custom log', this);
 		let transform = this.toMap.forward;
 		let layer = this.getImages360Layer();
 

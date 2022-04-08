@@ -47,8 +47,7 @@
 		viewer.setPointBudget(2_000_000);
 		viewer.loadSettingsFromURL();
 		viewer.setDescription(`Mobile LIDAR with 360 degree image overlays. 
-		Click on a sphere to enter 360 view. Click "unfocus" to leave 360 view. <br>
-		Point cloud courtesy of <a href="http://www.helimap.com/">Helimap System SA</a>. Images were downsized for this online demo; Original size is 8000x400.`);
+		Click on a sphere to enter 360 view. Click "unfocus" to leave 360 view. <br>`);
 		
 		viewer.loadGUI(() => {
 			viewer.setLanguage('en');
@@ -57,7 +56,7 @@
 		});
 		
 		// Load and add point cloud to scene
-		Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/MLS_drive1/cloud.js", "MLS", e => {
+		Potree.loadPointCloud("../pointclouds/siros2/metadata.json", "MLS", e => {
 			let scene = viewer.scene;
 			let pointcloud = e.pointcloud;
 			
@@ -70,27 +69,46 @@
 			
 			scene.addPointCloud(pointcloud);
 
-			viewer.scene.view.setView(
-				[2652381.103, 1249049.447, 411.636],
-				[2652364.407, 1249077.205, 399.696],
-			);
+			// viewer.scene.view.setView(
+			// 	[2652381.103, 1249049.447, 411.636],
+			// 	[2652364.407, 1249077.205, 399.696],
+			// );
+			viewer.fitToScreen();
+
+			// fixPointCloudProjection();
 
 			run();
 		});
 
+		// const fixPointCloudProjection = () => {
+		// 	viewer.scene.pointclouds.forEach((x) => {
+		// 		x.projection = '+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs ';
+		// 	})
+		// }
+
 		async function run(){
-			console.log(viewer.getProjection());
-			proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+			// console.log(viewer.getProjection());
+			// proj4.defs("WGS84", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
 			proj4.defs("pointcloud", viewer.getProjection());
-			let transform = proj4("WGS84", "pointcloud");
+			console.log('pro', viewer.setProjection);
+			// proj4.defs("EPSG:2100", "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs ");
+			proj4.defs("EPSG:2100_shifted", "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=-80000 +y_0=-4140000 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs ");
+			proj4.defs("EPSG:2100", "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
+
+			// let transform = proj4("EPSG:2100", "EPSG:2100");
+			let transform = proj4("EPSG:2100", "pointcloud");
 
 			let params = {
 				transform: transform
 			};
 
+			console.log('v', viewer);
+
 			// this file contains coordinates, orientation and filenames of the images:
 			// http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/Drive2_selection/coordinates.txt
-			Potree.Images360Loader.load("http://5.9.65.151/mschuetz/potree/resources/pointclouds/helimap/360/Drive2_selection", viewer, params).then( images => {
+			Potree.Images360Loader.load("../resources/panorama", viewer, params).then( images => {
+				console.log('i', images);
+				console.log('sce', viewer.scene);
 				viewer.scene.add360Images(images);
 			});
 

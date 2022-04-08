@@ -27,6 +27,7 @@ class Image360{
 		this.latitude = latitude;
 		this.altitude = altitude;
 		this.course = course;
+		this.course = course + 90 >= 360 ? (course + 90 - 360) : course + 90;
 		this.pitch = pitch;
 		this.roll = roll;
 		this.mesh = null;

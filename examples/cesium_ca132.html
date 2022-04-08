@@ -62,7 +62,8 @@
 		terrainShadows: Cesium.ShadowMode.DISABLED,
 	});
 
-	let cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
+	// let cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
+	let cp = new Cesium.Cartesian3.fromRadians(24.93, 37.45);
 	cesiumViewer.camera.setView({
 		destination : cp,
 		orientation: {
@@ -90,32 +91,72 @@
 		potreeViewer.toggleSidebar();
 	});
 	
-	Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+	// Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
 
-		let pointcloud = e.pointcloud;
-		let scene = potreeViewer.scene;
-		let material = pointcloud.material;
+	// 	let pointcloud = e.pointcloud;
+	// 	let scene = potreeViewer.scene;
+	// 	let material = pointcloud.material;
 
-		scene.addPointCloud(pointcloud);
+	// 	scene.addPointCloud(pointcloud);
 
-		material.size = 1;
-		material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+	// 	material.size = 1;
+	// 	material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 		
-		potreeViewer.scene.view.setView(
-			[689429.64, 3877023.77, 42878.97],
-			[696072.86, 3916730.04, 82.04],
-		);
+	// 	potreeViewer.scene.view.setView(
+	// 		[689429.64, 3877023.77, 42878.97],
+	// 		[696072.86, 3916730.04, 82.04],
+	// 	);
 
-		console.log('p')
-		let pointcloudProjection = e.pointcloud.projection;
-		console.log(pointcloudProjection)
-		let mapProjection = proj4.defs("WGS84");
-		console.log(mapProjection)
-
-		window.toMap = proj4(pointcloudProjection, mapProjection);
-		window.toScene = proj4(mapProjection, pointcloudProjection);
+	// 	console.log('p')
+	// 	console.log(pointcloudProjection)
+	// 	console.log(mapProjection)
 		
-	});
+	// });
+
+	const mapProjection = proj4.defs("WGS84");
+	window.toMap = proj4("+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs", mapProjection);
+	window.toScene = proj4(mapProjection, "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=-199.87,74.79,246.62,0,0,0,0 +units=m +no_defs");
+
+	// wrap load code into an async function so that we can use "await"
+	async function load(){
+
+		// specify point clouds that are to be loaded and callbacks to invoke 
+		let pointclouds = [
+			{
+				url: "../pointclouds/mouseio_converted/metadata.json", 
+				callback: (pointcloud) => {
+					pointcloud.name = "mouseio";
+
+					let material = pointcloud.material;
+					material.size = 1;
+					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				},
+			},{
+				url: "../pointclouds/proveleggios_converted/metadata.json", 
+				callback: (pointcloud) => {
+					pointcloud.name = "proveleggios";
+
+					let material = pointcloud.material;
+					material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+				},
+			},
+		];
+
+		// start loading all point clouds asynchronously, get a promise for each one that resolves when it's loaded
+		let promises = pointclouds.map(p => Potree.loadPointCloud(p.url));
+
+		// now iterate over all promises in order
+		for(let i = 0; i < promises.length; i++){
+
+			// wait until this point cloud is loaded before processing the next one
+			let pointcloud = (await promises[i]).pointcloud;
+
+			pointclouds[i].callback(pointcloud);
+			potreeViewer.scene.addPointCloud(pointcloud);
+		}
+	}
+
+	load()
 
 	function loop(timestamp){
 		requestAnimationFrame(loop);

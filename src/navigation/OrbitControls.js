@@ -43,6 +43,7 @@ export class OrbitControls extends EventDispatcher{
 		this.tweens = [];
 
 		let drag = (e) => {
+			// console.log(e);
 			if (e.drag.object !== null) {
 				return;
 			}
